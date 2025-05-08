@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f7f8fc;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: white;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        /* Profile + Name/Surname Row */
+        .photo-name-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .name-surname-column {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 15px;
+        }
+
+        .profile-photo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-photo-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .photo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #eee;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+                .role-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+
+                .role-options label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap; /* ✅ Prevents the text from breaking into lines */
+        }
+
+
+        .form-full {
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .button-group button,
+        .button-group .back-button {
+            flex: 0 0 auto;
+            width: auto;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357bd8;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Name/Surname Column + Profile Photo -->
+        <div class="photo-name-row">
+            <div class="name-surname-column">
+                <div class="form-group">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {{ form.surname.label_tag }}
+                    {{ form.surname }}
+                </div>
+                
+            </div>
+            <div class="profile-photo-wrapper">
+                <label for="id_profilePhoto">
+                    <img src="https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?semt=ais_hybrid&w=740" alt="Profile Photo" class="photo-preview" id="photoPreview">
+                </label>
+                <div>Foydalanuvchi rasmi (null)</div>
+                {{ form.profilePhoto }}
+            </div>
+        </div>
+
+        <!-- Username & Phone -->
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                {{ form.phone_number.label_tag }}
+                {{ form.phone_number }}
+            </div>
+        </div>
+
+        <!-- Okrug -->
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.okrugId.label_tag }}
+                {{ form.okrugId }}
+            </div>
+        </div>
+
+        <!-- Password & Confirm -->
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+            </div>
+            <div class="form-group">
+                {{ form.confirm_password.label_tag }}
+                {{ form.confirm_password }}
+            </div>
+        </div>
+
+        <!-- Role choices -->
+        <div class="form-row">
+            <div class="form-group form-full">
+                <label>{{ form.role.label }}</label>
+                <div class="role-options">
+                    {% for checkbox in form.roles %}
+                        <label>
+                            {{ checkbox.choice_label }}
+                            {{ checkbox.tag }}
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-group form-full">
+            <div class="button-group">
+                <a href="{% url 'home' %}" class="back-button">Orqaga qaytish</a>
+                <button type="submit">Saqlash</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if messages %}
+    <ul id="django-messages" style="display:none;">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+
+<script>
+    const input = document.getElementById('id_profilePhoto');
+    const preview = document.getElementById('photoPreview');
+    input.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+        }
+    });
+
+
+</script>
+
+</body>
+</html>

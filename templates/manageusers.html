@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Change User Passwords</title>
+    <style>
+        body {
+            /*background-color: #e6f2ff;*/
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 102, 204, 0.1);
+        }
+        th, td {
+            border: 1px solid #cce0ff;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #cce6ff;
+            color: #003366;
+        }
+        input[type="password"] {
+            width: 90%;
+            padding: 6px;
+            border: 1px solid #b3d1ff;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #3399ff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #1a8cff;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .back-home {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #3366cc;
+            font-weight: bold;
+        }
+        .back-home:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="color: #004080;">Foydalanuvchi parolini o'zgartirish</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Avatar</th>
+                <th>Username</th>
+                <th>yangi parol</th>
+                <th>Parolni tasdiqlash</th>
+                <th>O'zgartirish</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in profiles %}
+            <tr>
+                <td>
+                    <img src="{{user.getUrlOfPhoto}}" alt="Avatar" class="avatar">
+                    <input type="text" name="user_id" value="{{user.user_id.id}}" style="display: none;">
+                </td>
+                <td>{{ user.user_id.username }}</td>
+                <td>
+                    <input type="password" name="password" required>
+                </td>
+                <td>
+                    <input type="password" name="confirm_password" required>
+                </td>
+                <td>
+                    <input type="submit" value="Saqlash" onclick="save(this)">
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'home' %}" class="back-home">← Asosiy sahifaga qaytish</a>
+
+    <script type="text/javascript">
+
+    	function getCookie(name) {
+		    let cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		      const cookies = document.cookie.split(';');
+		      for (let i = 0; i < cookies.length; i++) {
+		        const cookie = cookies[i].trim();
+		        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		          break;
+		        }
+		      }
+		    }
+		    return cookieValue;
+		}
+
+		function sendData(data){
+			fetch("{% url 'manageusers' %}", {
+				method:'POST',
+				headers:{
+					'Content-Type':'application/x-www-form-urlencoded',
+					'X-CSRFToken':getCookie('csrftoken')
+				},
+				body:JSON.stringify(data)
+			})
+			.then(response => response.json())
+			.then(datas =>{
+				alert(datas['message'])
+			})
+		}
+
+    	function save(button){
+    		let row = button.closest('tr');
+    		let userid = row.querySelector('input[name = "user_id"]').value;
+    		let password = row.querySelectorAll('input[name = "password"]')[0].value;
+    		let pass_confirm = row.querySelectorAll('input[name = "confirm_password"]')[0].value;
+    		console.log(password);
+    		console.log(pass_confirm);
+    		if(password!=="" && pass_confirm!==""){
+    			if(password === pass_confirm){
+    				let data = {};
+    				data['userid'] = userid;
+    				data['password'] = password;
+    				
+    				sendData(data);
+    			}else{
+    				alert("Parollar mos emas!")
+    			}
+    		}else{
+    			alert("Parollar bo'sh bo'la olmaydi..");
+    		}
+    	}
+    </script>
+
+</body>
+</html>

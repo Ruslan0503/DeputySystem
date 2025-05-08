@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ session.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            /*background-color: #e7f0fa;*/
+            color: #0d1a26;
+        }
+        .btn-agree {
+            background-color: #198754;
+            color: white;
+        }
+        .btn-disagree {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-neutral {
+            background-color: #ffc107;
+            color: black;
+        }
+        .btn-finish {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .dim-topic {
+            color: #6c757d;
+            font-style: italic;
+        }
+        img.rounded-circle {
+            object-fit: cover;
+        }
+
+        .fixed-reload-button:hover{
+            color:#ffffff;
+            background-color:#0d6efd;
+        }
+        .fixed-reload-button{
+		    position: fixed;
+		    bottom: 80px;
+		    right: 80px;
+		    width: 45px;
+		    height: 45px;
+		    background-color: #ffffff;
+		    color: #0d6efd;
+		    border: 2px solid #0d6efd;
+		    border-radius: 50%;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+		    cursor: pointer;
+		    z-index: 9999;
+		    transition: background-color 0.2s ease, color 0.2s ease;
+		}
+
+		.fixed-reload-button:hover {
+		    background-color: #0d6efd;
+		    color: white;
+		}
+
+
+        .highlight-topic {
+    background-color: #f0f8ff;
+    border: 2px solid #0d6efd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+}
+
+
+    </style>
+</head>
+<body class="container py-4">
+
+    <!-- Responsive Title + Home Button -->
+    <div class="row align-items-center mb-4">
+        <div class="col-12 col-md-8">
+            <h2 class="text-primary mb-2 mb-md-0">Mavzu: {{ session.title|capfirst }}</h2>
+        </div>
+        <div class="col-12 col-md-4 text-md-end" style="display: flex; gap:10px;">
+        	{% if can_change %} <a href="{% url 'adjourmentmeeting' org.id %}" class="btn btn-secondary w-100 w-md-auto" style="background-color: #0d6efd">Tahrirlash</a> {% endif %}
+            <a href="{% url 'home' %}" class="btn btn-secondary w-100 w-md-auto">🏠 Asosiy sahifa</a>
+        	
+        </div>
+    </div>
+
+    <p><strong>Vaqti:</strong> {{ session.council_time }}</p>
+    <p>Ovoz beruvchi: {{ request.user.first_name }} {{ request.user.last_name }}</p>
+
+
+
+{% if current_topic %}
+    <hr>
+    <div class="highlight-topic p-4 mb-4">
+        <h4 class="mb-3 text-uppercase">Masala:</h4>
+        <p class="fs-5 fw-bold">{{ current_topic.topic_name }} 
+            {% if current_topic.topic_name == "Kotibni saylashga rozimisiz?" %}
+                ( {{org.secretary.first_name}} {{org.secretary.last_name}} )
+            {% endif %}
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="topicid" value="{{ current_topic.id }}">
+
+            <div class="d-flex flex-column flex-md-row gap-2 mt-3">
+                {% if not voted %}
+                    <button type="submit" name="vote" value="agree" class="btn btn-agree w-100 w-md-auto">Roziman</button>
+                    <button type="submit" name="vote" value="disagree" class="btn btn-disagree w-100 w-md-auto">Noroziman</button>
+                    <button type="submit" name="vote" value="neutral" class="btn btn-neutral w-100 w-md-auto">Betaraf</button>
+                {% endif %}
+                {% if leader %}
+                    <button type="submit" name="vote" value="finish" class="btn btn-finish ms-md-auto w-100 w-md-auto">Masalani yakunlash</button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{% else %}
+<div class="alert alert-info mt-4">
+            Sessiya masalalari tugadi!
+        </div>
+    {% endif %}
+
+    
+        <hr>
+        <h5 class="text-secondary">Boshqa masalalar:</h5>
+        <div style="display: flex; gap: 35%;">
+        	<!-- <div class="dim-topic">
+            	{% for i in other_topics %}
+                	<p>• {{ i.topic_name }} {% if i.done == True %} √ {% endif %} </p>
+            	{% endfor %}
+        	</div>
+ -->
+        	<div class="dim-topic">
+        		{% for i in usersessions %}
+
+        			<p> Masala: <b>{{i.session_topic.topic_name}}</b>: 
+
+        				{% if i.vote_value == "agree" or i.vote_value == "Agree" %}
+        					<i class="fa-solid fa-thumbs-up"> </i>
+        				{% elif i.vote_value == "disagree" or i.vote_value == "Disagree" %}
+        					<i class="fa-solid fa-thumbs-down"> </i>
+        				{% elif i.vote_value == "neutral" or i.vote_value == "Neutral" %}
+        					<i >--</i>
+        				{% else %}
+        					<i class=""> Ovoz berilmagan </i>
+        				{% endif %}
+        			</p>
+        		{% endfor %}
+        	</div>
+        </div>
+    
+
+
+
+<hr>
+<h4 class="text-primary mt-4">Ovozlar natijasi</h4>
+
+<!-- Table for larger screens -->
+<div class="d-none d-md-block table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Masala</th>
+                <th>Rozilar</th>
+                <th>Norozilar</th>
+                <th>Netral</th>
+                <th>Qolganlar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in voted_topics %}
+            <tr>
+                <td>{{ i.session_topic.topic_name }}</td>
+                <td>{{ i.session_topic.agree }}</td>
+                <td>{{ i.session_topic.disagree }}</td>
+                <td>{{ i.session_topic.neutral }}</td>
+                <td>{{ i.remaining }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Cards for small screens -->
+<div class="d-block d-md-none">
+    {% for i in voted_topics %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h6 class="card-title">{{ i.session_topic.topic_name }}</h6>
+            <p class="mb-1"><strong>Rozilar:</strong> {{ i.session_topic.agree }}</p>
+            <p class="mb-1"><strong>Norozilar:</strong> {{ i.session_topic.disagree }}</p>
+            <p class="mb-1"><strong>Netral:</strong> {{ i.session_topic.neutral }}</p>
+            <p class="mb-0"><strong>Qolganlar:</strong> {{ i.remaining }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+
+    {% if secretary and participants %}
+        <div class="row" id="check_participants">
+        	<h4 class="text-info mt-5">Qatnashuvchilarni belgilash</h4>
+            {% for user in participants %}
+                <div class="col-12 col-sm-6 col-md-4 d-flex align-items-center mb-3">
+                    <img src="{{ user.profile_photo.url }}" alt="profile" class="rounded-circle me-2" width="40" height="40">
+                    <label class="form-check-label me-auto w-100">
+                        {{ user.user_id.first_name }} {{ user.user_id.last_name }}
+                        <input type="checkbox" name="attendees" value="{{ user.user_id.id }}"
+                            {% if user.id in attended_ids %}checked{% endif %}
+                            class="form-check-input float-end">
+                    </label>
+                </div>
+            {% endfor %}
+            <div class="text-center mt-3">
+            	<button type="submit" name="attendance_submit" class="btn btn-primary" onclick="SaveAttendance()">Saqlash</button>
+        	</div>
+        </div>
+        
+    {% endif %}
+
+    <div class="fixed-reload-button" onclick="location.reload()" title="Reload">
+    <i class="fas fa-rotate-right"></i>
+</div>
+    <script type="text/javascript">
+        function SaveAttendance() {
+            const checkboxes = document.querySelectorAll('input[name="attendees"]:checked');
+            let selectedAttendees = [];
+
+            checkboxes.forEach(checkbox => {
+                selectedAttendees.push(checkbox.value);
+            });
+
+            fetch("{% url 'checkattendance' %}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    "userids": selectedAttendees,
+                    "sessionid": "{{ session.id }}"
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data["message"] == "done"){
+                	document.getElementById('check_participants').style.display = "None";
+                }
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+
+  
+</body>
+</html>

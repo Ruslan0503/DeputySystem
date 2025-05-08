@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kengash tashkil etish</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+	    body {
+	      font-family: 'Segoe UI', sans-serif;
+	      color: #003366;
+	      display: flex;
+	      justify-content: center;
+	      align-items: center;
+	      min-height: 100vh;
+	      margin: 0;
+	      padding: 20px;
+	      /*background-color: #f5faff;*/
+	    }
+
+	    .view-container {
+	      background: #ffffff;
+	      border: 1px solid #b3cde0;
+	      border-radius: 12px;
+	      padding: 30px;
+	      box-shadow: 0 4px 10px rgba(0, 51, 102, 0.1);
+	      width: 100%;
+	      max-width: 480px;
+	      text-align: left;  /* Align text to the left */
+	      box-sizing: border-box;
+	    }
+
+	    .view-container h2 {
+	      color: #005b96;
+	      margin-bottom: 20px;
+	      text-align: center; /* Keep title centered */
+	    }
+
+	    label {
+	      display: block;
+	      margin: 10px 0 5px;
+	      font-weight: bold;
+	      text-align: left;
+	    }
+
+	    input[type="datetime-local"],
+	    input[type="text"],
+	    select {
+	      width: 100%;
+	      padding: 10px;
+	      border: 1px solid #a9cce3;
+	      border-radius: 6px;
+	      background: #f0f8ff;
+	      margin-bottom: 10px;
+	      font-size: 1rem;
+	      box-sizing: border-box;
+	    }
+
+	    select:focus,
+	    input:focus {
+	      border-color: #0077cc;
+	      outline: none;
+	    }
+
+	    .topic-wrapper {
+	      display: flex;
+	      align-items: center;
+	      margin-bottom: 10px;
+	    }
+
+	    .topic-field {
+	      flex: 1;
+	      margin-right: 10px; /* Add space between input and remove button */
+	    }
+
+	    .remove-btn {
+	      background-color: red;
+	      color: white;
+	      border: none;
+	      border-radius: 50%;
+	      width: 30px; /* Increase button size */
+	      height: 30px; /* Increase button size */
+	      font-size: 20px; /* Increase font size */
+	      line-height: 30px;
+	      cursor: pointer;
+	      display: inline-block;
+	      text-align: center;
+	    }
+
+	    .buttons {
+	      margin-top: 20px;
+	      display: flex;
+	      justify-content: space-between;
+	      gap: 10px;
+	      flex-wrap: wrap;
+	    }
+
+	    .btn {
+	      flex: 1;
+	      padding: 10px;
+	      border: none;
+	      border-radius: 6px;
+	      color: white;
+	      cursor: pointer;
+	      font-size: 1rem;
+	      transition: background 0.3s ease;
+	      box-sizing: border-box;
+	    }
+
+	    .add-btn {
+	      background-color: #1e8449;
+	    }
+
+	    .add-btn:hover {
+	      background-color: #357ab8;
+	    }
+
+	    .submit-btn {
+	      background-color: #0077cc;
+	    }
+
+	    .submit-btn:hover {
+	      background-color: #005b96;
+	    }
+
+	    .home-button {
+	      margin-top: 20px;
+	      display: inline-block;
+	      padding: 10px 20px;
+	      background-color: #9a7d0a;
+	      color: white;
+	      border: none;
+	      border-radius: 6px;
+	      text-decoration: none;
+	      font-size: 1rem;
+	      width: 100%;
+	      box-sizing: border-box;
+	    }
+
+	    .home-button:hover {
+	      color: black;
+	    }
+
+	    /* Responsive layout */
+	    @media (max-width: 600px) {
+	      .view-container {
+	        padding: 20px;
+	      }
+
+	      .buttons {
+	        flex-direction: column;
+	      }
+
+	      .btn {
+	        width: 100%;
+	      }
+
+	      .home-button {
+	        width: 100%;
+	      }
+	    }
+  </style>
+</head>
+<body>
+  <div class="view-container">
+    <h2>Kengash tashkil qilish</h2>
+    <form method="post" action="{% url 'adjourmentmeeting' org.id %}"> 
+      {% csrf_token %}
+
+      <label for="title">Kengash mavzusi</label>
+      <input type="text" id="title" name="title" placeholder="Kengash mavzusi" value="{{org.title}}">
+
+      <label for="council_time">Kengash sanasi va vaqti</label>
+		<input type="datetime-local" id="council_time" name="council_time" step="60"
+		       value="{{ org.council_time|date:'Y-m-d\\TH:i' }}">
+
+
+      <label for="secretary">Kotiblikka nomzod</label>
+		<select id="secretary" name="secretary">
+		  {% for i in userss %}
+		    <option value="{{ i.username }}" {% if i == org.secretary %}selected{% endif %}>
+		      {{ i.username }}
+		    </option>
+		  {% endfor %}
+		</select>
+
+
+		<label>Masala</label>
+      {% for x in sessiontopics %}
+      <div id="topics-container">
+        <div class="topic-wrapper">
+          <input type="text" name="topic_name" class="topic-field" value="{{x.topic_name}}" placeholder="Masalani kiriting">
+          <button type="button" class="remove-btn" onclick="removeTopicField(this)">-</button>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="buttons">
+        <button type="button" class="btn add-btn" onclick="addTopicField()">Masala qo'shish</button>
+        <button type="submit" class="btn submit-btn">Saqlash</button>
+      </div>
+    </form>
+
+    <a href="{% url 'home' %}" class="home-button" style="text-align: center;">Asosiy sahifaga qaytish</a>
+  </div>
+
+  <script>
+    function addTopicField() {
+      const container = document.getElementById('topics-container');
+      const newFieldWrapper = document.createElement('div');
+      newFieldWrapper.classList.add('topic-wrapper');
+      
+      const newField = document.createElement('input');
+      newField.type = 'text';
+      newField.name = 'topic_name';
+      newField.className = 'topic-field';
+      newField.placeholder = "Boshqa masala qo'shish";
+      
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'remove-btn';
+      removeButton.textContent = '-';
+      removeButton.onclick = function() {
+        removeTopicField(removeButton);
+      };
+      
+      newFieldWrapper.appendChild(newField);
+      newFieldWrapper.appendChild(removeButton);
+      container.appendChild(newFieldWrapper);
+    }
+
+    function removeTopicField(button) {
+      const fieldWrapper = button.parentNode;
+      fieldWrapper.remove();
+    }
+  </script>
+</body>
+</html>

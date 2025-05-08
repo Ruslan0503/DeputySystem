@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deputy Voting System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+
+        .user-info img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .user-details {
+            flex-grow: 1;
+        }
+
+        .user-details h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .user-details p {
+            margin: 5px 0 0;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+
+        .session-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .session-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .session-card:hover {
+            transform: scale(1.02);
+        }
+
+        .session-card h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #2c3e50;
+        }
+
+        .session-details p {
+            margin: 6px 0;
+            font-size: 0.95em;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .session-time h3 {
+            margin: 0;
+            font-size: 1em;
+            color: #555;
+        }
+
+        @media (min-width: 600px) {
+            .session-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .session-card {
+                width: calc(33.333% - 20px);
+            }
+        }
+
+/*<<<<<<< HEAD
+       .reload-button {
+    position: absolute;
+    top: 45%;
+    right: 15px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+    box-sizing: border-box;
+    z-index: 1;
+}*/
+
+/* Ensures .user-info has enough height to allow vertical centering */
+
+
+/* Optional: Make it slightly larger and more touch-friendly on small screens */
+@media (max-width: 480px) {
+    .reload-button {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+
+    }
+}
+        .reload-button {
+            position: absolute;
+            top: 45%;
+            right: 15px;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 20px;
+            line-height: 1;
+            padding: 0;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        @media (max-width: 480px) {
+            .reload-button {
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+            }
+        }
+
+
+        #sessions .session-card {
+    background-color: #e6f7ff; /* Light blue for active sessions */
+    border-left: 5px solid #1890ff;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+#passed_sessions .session-card {
+    background-color: #f5f5f5; /* Light gray for passed sessions */
+    border-left: 5px solid #d9d9d9;
+    padding: 15px;
+    margin-bottom: 15px;
+    opacity: 0.8;
+    transition: background-color 0.3s ease;
+}
+
+.session-card:hover {
+    background-color: #d6ecff; /* Subtle hover effect for both */
+    cursor: pointer;
+}
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+
+
+<div class="user-info">
+    <img src="{{ request.user.userProfile.profile_photo.url }}" alt="Profile Photo">
+    <div class="user-details">
+        <h2>
+            {% if has_leader_role %}
+                <b>Ishchi guruh raxbari:</b>
+            {% else %}
+                <b>Deputat:</b>
+            {% endif %}
+            {{ request.user.username }}
+        </h2>
+        <small>{{ request.user.first_name }} {{ request.user.last_name }}</small>
+        <p>telefon raqam: {{ request.user.userProfile.phone_number }}</p>
+
+    </div>
+    <div class="reload-button" onclick="location.reload()" title="Reload">
+        <i class="fas fa-sync-alt"></i>
+    </div>
+</div>
+
+<!-- Navigation and Checkboxes -->
+<div class="nav-links">
+    {% if request.user.is_superuser %}
+        <a href="{% url 'addsomeonenew' %}">Foydalanuvchi ro'yhatdan o'tirish</a>
+        <a href="{% url 'manageusers' %}">Foydalanuvchilarni parollarini tiklash</a>
+    {% endif %}
+    {% if has_kotib_role %}
+        <a href="{% url 'organizesession' %}">Sessiya Tashkillashtirish</a>
+    {% endif %}
+
+    <!-- Checkboxes to filter sessions -->
+    <div class="d-flex align-items-center gap-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="checkboxUpcoming" checked>
+            <label class="form-check-label" for="checkboxUpcoming">Joriy sessiyalar</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="checkboxPassed">
+            <label class="form-check-label" for="checkboxPassed">Tugallangan sessiyalar</label>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Sessions -->
+<div class="session-list" id="sessions">
+    {% for x in sessions %}
+    <div class="session-card" onclick="window.location.href='{% url 'voting' x.id %}'">
+        <h2>Mavzu: {{ x.title }}</h2>
+        <div class="session-details">
+            <p><strong>Kengash raisi:</strong> {{ x.owner.first_name }} {{ x.owner.last_name }}, {{ x.owner.userProfile.okrugId.okrug_name }}</p>
+            <p><strong>Kotib:</strong> {{ x.secretary.first_name }} {{ x.secretary.last_name }}, {{ x.secretary.userProfile.okrugId.okrug_name }}</p>
+        </div>
+        <div class="session-time">
+            <h3>{{ x.council_time|date:"d/m/Y H:i" }}</h3>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Passed Sessions -->
+<div class="session-list" id="passed_sessions" style="display: none; margin-top:20px;">
+    {% for x in passed_sessions %}
+    <div class="session-card" onclick="window.location.href='{% url 'voting' x.id %}'">
+        <h2>Mavzu: {{ x.title }}</h2>
+        <div class="session-details">
+            <p><strong>Kengash raisi:</strong> {{ x.owner.first_name }} {{ x.owner.last_name }}, {{ x.owner.userProfile.okrugId.okrug_name }}</p>
+            <p><strong>Kotib:</strong> {{ x.secretary.first_name }} {{ x.secretary.last_name }}, {{ x.secretary.userProfile.okrugId.okrug_name }}</p>
+        </div>
+        <div class="session-time">
+            <h3>{{ x.council_time|date:"d/m/Y H:i" }}</h3>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Toggle Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxUpcoming = document.getElementById("checkboxUpcoming");
+        const checkboxPassed = document.getElementById("checkboxPassed");
+        const upcomingSessions = document.getElementById("sessions");
+        const passedSessions = document.getElementById("passed_sessions");
+
+        function updateVisibility() {
+            upcomingSessions.style.display = checkboxUpcoming.checked ? "flex" : "none";
+            passedSessions.style.display = checkboxPassed.checked ? "flex" : "none";
+        }
+
+        checkboxUpcoming.addEventListener("change", updateVisibility);
+        checkboxPassed.addEventListener("change", updateVisibility);
+
+        // Show initial view
+        updateVisibility();
+    });
+</script>
+
+</body>
+</html>
