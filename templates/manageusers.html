@@ -2,49 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change User Passwords</title>
     <style>
         body {
-            /*background-color: #e6f2ff;*/
             font-family: Arial, sans-serif;
-            padding: 30px;
+            padding: 20px;
+            background-color: #f7f7f7;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0, 102, 204, 0.1);
-        }
-        th, td {
-            border: 1px solid #cce0ff;
-            padding: 12px;
+        h2 {
+            color: #004080;
             text-align: center;
         }
-        th {
-            background-color: #cce6ff;
-            color: #003366;
-        }
-        input[type="password"] {
-            width: 90%;
-            padding: 6px;
+        select, input[type="password"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
             border: 1px solid #b3d1ff;
             border-radius: 4px;
+            font-size: 16px;
         }
         input[type="submit"] {
             background-color: #3399ff;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
             cursor: pointer;
         }
         input[type="submit"]:hover {
             background-color: #1a8cff;
-        }
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
         }
         .back-home {
             display: inline-block;
@@ -56,100 +41,133 @@
         .back-home:hover {
             text-decoration: underline;
         }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .user-details {
+            display: none;
+            margin-top: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 102, 204, 0.1);
+            padding: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            select, input[type="password"], input[type="submit"] {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            select, input[type="password"], input[type="submit"] {
+                padding: 10px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h2 style="color: #004080;">Foydalanuvchi parolini o'zgartirish</h2>
+    <h2>Foydalanuvchi parolini o'zgartirish</h2>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Avatar</th>
-                <th>Username</th>
-                <th>yangi parol</th>
-                <th>Parolni tasdiqlash</th>
-                <th>O'zgartirish</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in profiles %}
-            <tr>
-                <td>
-                    <img src="{{user.getUrlOfPhoto}}" alt="Avatar" class="avatar">
-                    <input type="text" name="user_id" value="{{user.user_id.id}}" style="display: none;">
-                </td>
-                <td>{{ user.user_id.username }}</td>
-                <td>
-                    <input type="password" name="password" required>
-                </td>
-                <td>
-                    <input type="password" name="confirm_password" required>
-                </td>
-                <td>
-                    <input type="submit" value="Saqlash" onclick="save(this)">
+    <select id="userSelect" onchange="showPasswordFields()">
+        <option value="">Foydalanuvchini tanlang</option>
+        {% for user in profiles %}
+            <option value="{{ user.user_id.id }}" data-avatar="{{ user.getUrlOfPhoto }}" data-username="{{ user.user_id.username }}">
+                {{ user.user_id.username }}
+            </option>
+        {% endfor %}
+    </select>
 
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div id="userDetails" class="user-details">
+        <h3 id="usernameDisplay"></h3>
+        <img id="avatarDisplay" src="" alt="Avatar" class="avatar">
+        <input type="password" id="newPassword" placeholder="Yangi parol" required>
+        <input type="password" id="confirmPassword" placeholder="Parolni tasdiqlash" required>
+        <input type="submit" value="Saqlash" onclick="savePassword()">
+    </div>
 
     <a href="{% url 'home' %}" class="back-home">← Asosiy sahifaga qaytish</a>
 
     <script type="text/javascript">
+        function showPasswordFields() {
+            const userSelect = document.getElementById("userSelect");
+            const userDetails = document.getElementById("userDetails");
+            const selectedOption = userSelect.options[userSelect.selectedIndex];
 
-    	function getCookie(name) {
-		    let cookieValue = null;
-		    if (document.cookie && document.cookie !== '') {
-		      const cookies = document.cookie.split(';');
-		      for (let i = 0; i < cookies.length; i++) {
-		        const cookie = cookies[i].trim();
-		        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-		          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-		          break;
-		        }
-		      }
-		    }
-		    return cookieValue;
-		}
+            if (selectedOption.value) {
+                const username = selectedOption.getAttribute("data-username");
+                const avatarUrl = selectedOption.getAttribute("data-avatar");
 
-		function sendData(data){
-			fetch("{% url 'manageusers' %}", {
-				method:'POST',
-				headers:{
-					'Content-Type':'application/x-www-form-urlencoded',
-					'X-CSRFToken':getCookie('csrftoken')
-				},
-				body:JSON.stringify(data)
-			})
-			.then(response => response.json())
-			.then(datas =>{
-				alert(datas['message'])
-			})
-		}
+                // Display user details
+                document.getElementById("usernameDisplay").textContent = username;
+                document.getElementById("avatarDisplay").src = avatarUrl;
+                
+                // Show the password input fields
+                userDetails.style.display = "block";
+            } else {
+                userDetails.style.display = "none";
+            }
+        }
 
-    	function save(button){
-    		let row = button.closest('tr');
-    		let userid = row.querySelector('input[name = "user_id"]').value;
-    		let password = row.querySelectorAll('input[name = "password"]')[0].value;
-    		let pass_confirm = row.querySelectorAll('input[name = "confirm_password"]')[0].value;
-    		console.log(password);
-    		console.log(pass_confirm);
-    		if(password!=="" && pass_confirm!==""){
-    			if(password === pass_confirm){
-    				let data = {};
-    				data['userid'] = userid;
-    				data['password'] = password;
-    				
-    				sendData(data);
-    			}else{
-    				alert("Parollar mos emas!")
-    			}
-    		}else{
-    			alert("Parollar bo'sh bo'la olmaydi..");
-    		}
-    	}
+        function savePassword() {
+            const userSelect = document.getElementById("userSelect");
+            const userId = userSelect.value;
+            const password = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password !== "" && confirmPassword !== "") {
+                if (password === confirmPassword) {
+                    let data = {
+                        'userid': userId,
+                        'password': password
+                    };
+                    sendData(data);
+                } else {
+                    alert("Parollar mos emas!");
+                }
+            } else {
+                alert("Parollar bo'sh bo'la olmaydi..");
+            }
+        }
+
+        function sendData(data) {
+            fetch("{% url 'manageusers' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(datas => {
+                alert(datas['message']);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
     </script>
 
 </body>

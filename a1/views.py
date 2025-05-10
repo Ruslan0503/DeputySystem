@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import *
 from .serializers import *
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.forms import AuthenticationForm
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
@@ -35,7 +35,7 @@ def home(request):
 	if pr:
 		has_leader_role = pr.role.filter(role_name__icontains = "Ishchi guruh rahbari").exists()
 	else:
-		has_kotib_role = False
+		has_leader_role = False
 	sessions = OrganizeSession.objects.filter(passed = False)
 	passed_sessions = OrganizeSession.objects.filter(passed = True)
 	print(has_leader_role)
@@ -46,6 +46,11 @@ def home(request):
 	'passed_sessions':passed_sessions,
 	}
 	return render(request, "home.html", context)
+
+def logoutFunction(request):
+	logout(request)
+	return redirect("login")
+
 
 class AdjourmentMeeting(LoginRequiredMixin,TemplateView):
 	template_name = "adjourment.html"

@@ -14,8 +14,32 @@
             background-color: #f4f4f4;
         }
 
+        /* Top-right logout button */
+        .logout-top-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .logout-top-button:hover {
+            background-color: #ff5c5c;
+            border-color: #ff0000;
+            transform: scale(1.1);
+        }
+
         .user-info {
-            position: relative;
             display: flex;
             align-items: center;
             gap: 15px;
@@ -23,9 +47,12 @@
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            position: relative;
         }
 
+        .profile-container {
+            position: relative;
+        }
 
         .user-info img {
             width: 60px;
@@ -126,63 +153,6 @@
             }
         }
 
-/*<<<<<<< HEAD
-       .reload-button {
-    position: absolute;
-    top: 45%;
-    right: 15px;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 20px;
-    line-height: 1;
-    padding: 0;
-    box-sizing: border-box;
-    z-index: 1;
-}*/
-
-/* Ensures .user-info has enough height to allow vertical centering */
-
-
-/* Optional: Make it slightly larger and more touch-friendly on small screens */
-@media (max-width: 480px) {
-    .reload-button {
-        width: 40px;
-        height: 40px;
-        font-size: 22px;
-
-    }
-}
-        .reload-button {
-            position: absolute;
-            top: 45%;
-            right: 15px;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            font-size: 20px;
-            line-height: 1;
-            padding: 0;
-            box-sizing: border-box;
-            z-index: 1;
-        }
-
         @media (max-width: 480px) {
             .reload-button {
                 width: 40px;
@@ -191,38 +161,42 @@
             }
         }
 
-
         #sessions .session-card {
-    background-color: #e6f7ff; /* Light blue for active sessions */
-    border-left: 5px solid #1890ff;
-    padding: 15px;
-    margin-bottom: 15px;
-    transition: background-color 0.3s ease;
-}
+            background-color: #e6f7ff;
+            border-left: 5px solid #1890ff;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
 
-#passed_sessions .session-card {
-    background-color: #f5f5f5; /* Light gray for passed sessions */
-    border-left: 5px solid #d9d9d9;
-    padding: 15px;
-    margin-bottom: 15px;
-    opacity: 0.8;
-    transition: background-color 0.3s ease;
-}
+        #passed_sessions .session-card {
+            background-color: #f5f5f5;
+            border-left: 5px solid #d9d9d9;
+            padding: 15px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+            transition: background-color 0.3s ease;
+        }
 
-.session-card:hover {
-    background-color: #d6ecff; /* Subtle hover effect for both */
-    cursor: pointer;
-}
-
+        .session-card:hover {
+            background-color: #d6ecff;
+            cursor: pointer;
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
 <body>
 
+<!-- Logout Button at Top Right -->
+<div class="logout-top-button" onclick="window.location.href='{% url 'logout' %}'" title="Logout">
+    <i class="fas fa-sign-out-alt"></i>
+</div>
 
 <div class="user-info">
-    <img src="{{ request.user.userProfile.profile_photo.url }}" alt="Profile Photo">
+    <div class="profile-container">
+        <!-- Profile Image -->
+        <img src="{{ request.user.userProfile.profile_photo.url }}" alt="Profile Photo">
+    </div>
+
     <div class="user-details">
         <h2>
             {% if has_leader_role %}
@@ -234,9 +208,9 @@
         </h2>
         <small>{{ request.user.first_name }} {{ request.user.last_name }}</small>
         <p>telefon raqam: {{ request.user.userProfile.phone_number }}</p>
-
     </div>
-    <div class="reload-button" onclick="location.reload()" title="Reload">
+ 
+    <div class="reload-button" onclick="location.reload()" title="Reload" style="margin-top:20px;">
         <i class="fas fa-sync-alt"></i>
     </div>
 </div>
