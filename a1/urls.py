@@ -12,6 +12,7 @@ urlpatterns = [
     path('voting/<int:id>/', views.VotingTemplateView.as_view(), name = "voting"),
     path('checkattendance/', views.CheckAttendenceTemplate, name = "checkattendance"),
     path('logout/', views.logoutFunction, name="logout"),
+    path('AddOkrug/', views.AddOkrug, name="AddOkrug"),
     #
 
     path('votingapiview/<int:id>/', views.VotingApiView.as_view(), name="votingapiview"),

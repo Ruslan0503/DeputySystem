@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deputy Voting System</title>
+    <title>Deputatlar ovoz berish dasturi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -199,6 +199,7 @@
 
     <div class="user-details">
         <h2>
+            <p>{{ request.user.userProfile.okrugId.okrug_name }} saylov okrugidan saylangan deputat</p>
             {% if has_leader_role %}
                 <b>Ishchi guruh raxbari:</b>
             {% else %}
@@ -221,7 +222,7 @@
         <a href="{% url 'addsomeonenew' %}">Foydalanuvchi ro'yhatdan o'tirish</a>
         <a href="{% url 'manageusers' %}">Foydalanuvchilarni parollarini tiklash</a>
     {% endif %}
-    {% if has_kotib_role %}
+    {% if has_leader_role %}
         <a href="{% url 'organizesession' %}">Sessiya Tashkillashtirish</a>
     {% endif %}
 
@@ -242,13 +243,13 @@
 <div class="session-list" id="sessions">
     {% for x in sessions %}
     <div class="session-card" onclick="window.location.href='{% url 'voting' x.id %}'">
-        <h2>Mavzu: {{ x.title }}</h2>
+        <h2>{{ x.title }}</h2>
         <div class="session-details">
-            <p><strong>Kengash raisi:</strong> {{ x.owner.first_name }} {{ x.owner.last_name }}, {{ x.owner.userProfile.okrugId.okrug_name }}</p>
-            <p><strong>Kotib:</strong> {{ x.secretary.first_name }} {{ x.secretary.last_name }}, {{ x.secretary.userProfile.okrugId.okrug_name }}</p>
+            <p><strong>Kengash raisi:</strong> {{ x.owner.first_name }} {{ x.owner.last_name }}, {{ x.owner.userProfile.okrugId.okrug_name }}  saylov okrugidan saylangan deputat</p>
+            <p><strong>Kotib:</strong> {{ x.secretary.first_name }} {{ x.secretary.last_name }}, {{ x.secretary.userProfile.okrugId.okrug_name }} saylov okrugidan saylangan deputat</p>
         </div>
         <div class="session-time">
-            <h3>{{ x.council_time|date:"d/m/Y H:i" }}</h3>
+            <h3>{{ x.council_time}}</h3>
         </div>
     </div>
     {% endfor %}

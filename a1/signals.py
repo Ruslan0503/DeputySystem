@@ -7,16 +7,8 @@ from .models import Profile, Role,SessionTopic,UserSession,OrganizeSession,UserS
 def deletevotes(sender, instance, created, **kwargs):
 	if created:
 		return
-
 	session_passes = SessionTopic.objects.filter(council_id = instance, topic_name__icontains = "Kengashni o'tkazishga rozimisiz?").first()
-	if session_passes and session_passes.done:
-		secretary_topic = SessionTopic.objects.filter(council_id = instance, topic_name__icontains = "Kotibni saylashga rozimisiz?").first()
-		secretary_topic.agree = 0
-		secretary_topic.disagree = 0
-		secretary_topic.neutral = 0
-		secretary_topic.save()
-		UserSession.objects.filter(session_topic = secretary_topic).delete()
-	else:
+	if session_passes and not session_passes.done:
 		UserSession.objects.filter(session_topic = session_passes).delete()
 		session_passes.agree = 0
 		session_passes.disagree = 0

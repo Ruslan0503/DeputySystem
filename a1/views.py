@@ -23,6 +23,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import timedelta
 from django.utils import timezone
+import re
 # Create your views here.
 
 #Admin: DeputySystemAdmin
@@ -54,7 +55,7 @@ def logoutFunction(request):
 
 class AdjourmentMeeting(LoginRequiredMixin,TemplateView):
 	template_name = "adjourment.html"
-
+	
 	def dispatch(self, request, **kwargs):
 		try:
 			org = OrganizeSession.objects.get(id = self.kwargs['id'])
@@ -84,6 +85,8 @@ class AdjourmentMeeting(LoginRequiredMixin,TemplateView):
 		sec = request.POST.get('secretary')
 		secretary = User.objects.get(username = sec)
 		org = OrganizeSession.objects.get(id = kwargs['id'])
+		if org.council_time!=council_time:
+			org.participants.clear()
 		org.title = title
 		org.council_time = council_time
 		org.secretary = secretary
@@ -148,13 +151,13 @@ class VotingApiView(APIView):
 
 def CheckAttendenceTemplate(request):
 	if request.user.is_authenticated:
-		
 		data = json.loads(request.body)
 		userids = data["userids"]
 		userids_int = [int(x) for x in userids]
 		sessionid = data["sessionid"]
 		org = OrganizeSession.objects.get(id = sessionid)
-		if org.secretary == request.user:
+		pr = request.user.userProfile
+		if pr.role.filter(role_name__icontains = "checker").exists():
 			session = OrganizeSession.objects.get(id = sessionid)
 			session.participants.set(User.objects.filter(id__in=userids_int))
 			return JsonResponse({"message":"done"})
@@ -162,12 +165,30 @@ def CheckAttendenceTemplate(request):
 			return JsonResponse({"message":"Sizda ruxsat mavjud emas!"})
 	return redirect("home")
 
+def AddOkrug(request):
+	if request.method == "POST":
+		name = request.POST.get('okrugInput')
+		
+		if len(name)!=0:
+			OkrugModel.objects.create(
+				okrug_name = name
+			)
+		return redirect('addsomeonenew')
+
 class VotingTemplateView(LoginRequiredMixin, TemplateView):
 	template_name = "voting.html"
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		leader = False
+		checker = False
+		if self.request.user.is_authenticated:
+			try:
+				pr = self.request.user.userProfile
+				if pr.role.filter(role_name__icontains = "checker").exists():
+					checker = True
+			except:
+				pass
 		org = OrganizeSession.objects.filter(id = self.kwargs['id']).first()
 		if org.owner == self.request.user:
 			leader = True
@@ -192,6 +213,7 @@ class VotingTemplateView(LoginRequiredMixin, TemplateView):
 				d["vote_value"] = ""
 			usersessions.append(d)
 		voted = UserSession.objects.filter(session_topic = current_topic, user_id = self.request.user).exists()
+		context["checker"] = checker
 		context["voted_topics"] = voted_topics
 		context["org"] = org
 		context["usersessions"] = usersessions
@@ -202,7 +224,7 @@ class VotingTemplateView(LoginRequiredMixin, TemplateView):
 		context["current_topic"] = current_topic
 		
 		if not org.participants.exists():
-			context["participants"] = Profile.objects.all()
+			context["participants"] = Profile.objects.filter(role__role_name__icontains="deputat")
 		context["leader"] = leader
 		return context
 
@@ -219,7 +241,8 @@ class VotingTemplateView(LoginRequiredMixin, TemplateView):
 		sessionid = self.kwargs['id']
 		vote_value = request.POST.get('vote')
 		org = OrganizeSession.objects.filter(id = sessionid).first()
-
+		if not org.participants.filter(id = request.user.id).exists():
+			return redirect("voting", id=sessionid)
 		if vote_value == "agree":
 			UserSession.objects.create(
 				user_id = request.user,
@@ -241,24 +264,19 @@ class VotingTemplateView(LoginRequiredMixin, TemplateView):
 				vote_value = UserSession.neutral
 				)
 
-		if topic.topic_name == "Kengashni o'tkazishga rozimisiz?":
-			ag = topic.agree if isinstance(topic.agree, (int, float)) else 0
-			disag = topic.disagree if isinstance(topic.disagree, (int, float)) else 0
-			if disag > ag:
-				message = "adjourmentmeeting"
+		if vote_value == "finish":
+			if topic.topic_name == "Kengashni o'tkazishga rozimisiz?":
+				ag = topic.agree if isinstance(topic.agree, (int, float)) else 0
+				disag = topic.disagree if isinstance(topic.disagree, (int, float)) else 0
+				if disag > ag:
+					return redirect("adjourmentmeeting", id=org.id)
 
-		if topic.topic_name == "Kotibni saylashga rozimisiz?":
-			ag = topic.agree if isinstance(topic.agree, (int, float)) else 0
-			disag = topic.disagree if isinstance(topic.disagree, (int, float)) else 0
-			if disag > ag:
-				message = "adjourmentmeeting"
+			topic.done =True
+			topic.save()
 
-		topic.done =True
-		topic.save()
-
-		if not SessionTopic.objects.filter(council_id=org, done=False).exists():
-			org.passed = True
-			org.save()
+			if not SessionTopic.objects.filter(council_id=org, done=False).exists():
+				org.passed = True
+				org.save()
 		
 
 		return redirect("voting", id=sessionid)
@@ -294,11 +312,6 @@ class OrganizeSessionApiVie(APIView):
 				topic_name = "Kengashni o'tkazishga rozimisiz?" 
 				)
 
-			SessionTopic.objects.create(
-				council_id = org,
-				topic_name = "Kotibni saylashga rozimisiz?" 
-				)
-
 			for i in topic_names:
 				SessionTopic.objects.create(
 				council_id = org,
@@ -312,11 +325,22 @@ class OrganizeSessionApiVie(APIView):
 class OrganizeSessions(LoginRequiredMixin,TemplateView):
 	template_name = "OrganizeSession.html"
 	def get(self, request, *args, **kwargs):
-		thecount = OrganizeSession.objects.count()+1
-		estimated_title = f"Bu {thecount} - sessiya"
+		thecount = OrganizeSession.objects.last()
+		if thecount:
+			thenum = re.search(r'\d+', thecount.title)
+			thenum = int(thenum.group())
+			print(thenum)
+			if not thenum:
+				thenum = 1
+			else:
+				thenum+=1
+		else:
+			thenum = 1
+		estimated_title = f"Xalq deputatlari Urganch shahar Kengashining {thenum} sessiyasi"
 		pr = Profile.objects.filter(user_id = request.user).first()
 		if pr and pr.role.filter(role_name__icontains = "ishchi guruh rahbari"):
-			userss = User.objects.filter(is_superuser = False)
+			checkeruser = Profile.objects.filter(role__role_name__icontains = "checker").values_list("user_id", flat=True)
+			userss = User.objects.filter(is_superuser = False).exclude(id__in = checkeruser)
 			return render(request, self.template_name, {"userss":userss,"estimated_title":estimated_title})
 		else:
 			return redirect("home")
@@ -329,6 +353,7 @@ class OrganizeSessions(LoginRequiredMixin,TemplateView):
 			sec = (request.POST.get('secretary'))
 			topic_names = (request.POST.getlist('topic_name'))
 			secretary = User.objects.filter(username = sec).first()
+
 			org = OrganizeSession.objects.create(
 				owner = request.user,
 				title = title,
@@ -339,10 +364,7 @@ class OrganizeSessions(LoginRequiredMixin,TemplateView):
 				council_id = org,
 				topic_name = "Kengashni o'tkazishga rozimisiz?"
 				)
-			SessionTopic.objects.create(
-				council_id = org,
-				topic_name = "Kotibni saylashga rozimisiz?"
-				)
+			
 			for i in topic_names:
 				if len(i)!=0:
 					SessionTopic.objects.create(

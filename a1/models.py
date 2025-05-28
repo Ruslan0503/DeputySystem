@@ -18,7 +18,7 @@ class OkrugModel(models.Model):
 
 class Profile(models.Model):
 	user_id = models.OneToOneField(User, related_name="userProfile" , on_delete = models.SET_NULL, null=True,blank=True)
-	phone_number = models.CharField(max_length = 25, null = True, blank = True)
+	phone_number = models.CharField(max_length = 50, null = True, blank = True)
 	okrugId = models.ForeignKey(OkrugModel, on_delete = models.SET_NULL, null=True)
 	profile_photo = models.ImageField(upload_to = 'profile_imgs/', null=True, blank=True, default = "profile_imgs/default.jpg")
 	role = models.ManyToManyField(Role, related_name = "RoleOfUser" , blank=True)

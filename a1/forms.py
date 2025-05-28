@@ -12,7 +12,7 @@ class CustomUserForm(forms.ModelForm):
     username = forms.CharField(max_length=150, label="Foydalanuvchi nomi")
     password = forms.CharField(widget=forms.PasswordInput, label="Parol")
     confirm_password = forms.CharField(widget=forms.PasswordInput, label="Parolni tasdiqlash")
-    phone_number = forms.CharField(max_length=15, required=False, label = "Telefon no'mer")
+    phone_number = forms.CharField(max_length=25, required=False, label = "Telefon no'mer")
     profilePhoto = forms.ImageField(required=False, label = "Foydalanuvchi Rasmi")
     roles = forms.MultipleChoiceField(
     	choices = ROLE_CHOICES,
